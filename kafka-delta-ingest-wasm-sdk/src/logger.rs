@@ -13,7 +13,7 @@
 // limitations under the License.
 
 use crate::hostcalls;
-use crate::types::LogLevel;
+use kafka_delta_ingest_wasm_types::LogLevel;
 use std::panic;
 use std::sync::atomic::{AtomicBool, Ordering};
 
@@ -22,7 +22,7 @@ struct Logger;
 static LOGGER: Logger = Logger;
 static INITIALIZED: AtomicBool = AtomicBool::new(false);
 
-pub(crate) fn set_log_level(level: LogLevel) {
+pub(crate) fn set_log_level(level: kafka_delta_ingest_wasm_types::LogLevel) {
     if !INITIALIZED.load(Ordering::Relaxed) {
         log::set_logger(&LOGGER).unwrap();
         panic::set_hook(Box::new(|panic_info| {

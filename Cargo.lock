@@ -2060,53 +2060,37 @@ dependencies = [
 name = "kafka-delta-ingest-wasm"
 version = "0.2.0"
 dependencies = [
- "anyhow",
- "apache-avro",
- "async-trait",
- "base64 0.13.1",
- "bytes",
  "chrono",
- "clap",
- "dipstick",
- "env_logger",
- "futures",
- "jmespatch",
- "lazy-init",
- "lazy_static",
+ "kafka-delta-ingest-wasm-types",
  "log",
- "maplit",
+ "num-traits",
  "rdkafka",
- "schema_registry_converter",
- "serde",
  "serde_json",
  "serial_test",
- "strum 0.20.0",
- "strum_macros 0.20.1",
  "tempfile",
  "thiserror",
  "time 0.3.31",
- "tokio",
- "tokio-stream",
- "tokio-util 0.6.10",
- "url",
  "utime",
- "uuid 0.8.2",
  "wasmtime",
 ]
 
 [[package]]
 name = "kafka-delta-ingest-wasm-sdk"
-version = "0.2.1"
+version = "0.2.0"
 dependencies = [
  "hashbrown 0.14.3",
+ "kafka-delta-ingest-wasm-types",
  "log",
+ "num-traits",
 ]
 
 [[package]]
-name = "lazy-init"
-version = "0.5.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9f40963626ac12dcaf92afc15e4c3db624858c92fd9f8ba2125eaada3ac2706f"
+name = "kafka-delta-ingest-wasm-types"
+version = "0.2.0"
+dependencies = [
+ "num-derive",
+ "num-traits",
+]
 
 [[package]]
 name = "lazy_static"
@@ -2458,6 +2442,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1ba157ca0885411de85d6ca030ba7e2a83a28636056c7c699b07c8b6f7383214"
 dependencies = [
  "num-traits",
+]
+
+[[package]]
+name = "num-derive"
+version = "0.4.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cfb77679af88f8b125209d354a202862602672222e7f2313fdd6dc349bad4712"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.48",
 ]
 
 [[package]]

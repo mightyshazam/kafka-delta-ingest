@@ -13,7 +13,7 @@
 // limitations under the License.
 
 use crate::hostcalls;
-use crate::types::*;
+use kafka_delta_ingest_wasm_types::*;
 use std::time::{Duration, SystemTime};
 
 pub trait Context {

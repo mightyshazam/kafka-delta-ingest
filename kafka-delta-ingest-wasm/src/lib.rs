@@ -3,11 +3,14 @@ use std::collections::HashMap;
 
 use std::sync::{Arc, RwLock};
 
+use exports::ExportCollection;
+use kafka_delta_ingest_wasm_types::Action;
 use rdkafka::message::OwnedMessage;
 use rdkafka::Message;
-use wasmtime::{
-    AsContext, AsContextMut, Caller, Engine, Extern, Instance, Linker, Module, Store, TypedFunc,
-};
+use wasmtime::{AsContextMut, Engine, Instance, Linker, Module, Store, TypedFunc};
+
+mod exports;
+mod imports;
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
@@ -102,39 +105,7 @@ impl WasmTransformer {
 
         let module = Module::from_file(&engine, file)?;
         let mut linker = Linker::new(&engine);
-        linker.func_wrap(
-            "host",
-            "proxy_set_output",
-            |mut env: Caller<HostContext>, offset: i32, length: i32| {
-                let memory = match env.get_export("memory") {
-                    Some(Extern::Memory(memory)) => memory,
-                    _ => panic!("no memory exported from wasm module"),
-                };
-                let mut data = vec![0; length as usize];
-                memory
-                    .read(env.as_context(), offset as usize, &mut data)
-                    .unwrap();
-                env.data().save_response(1, data);
-            },
-        )?;
-        linker.func_wrap(
-            "host",
-            "proxy_get_message_body",
-            |mut env: Caller<HostContext>, offset: i32, _length: i32| {
-                let memory = match env.get_export("memory") {
-                    Some(Extern::Memory(memory)) => memory,
-                    _ => panic!("no memory exported from wasm module"),
-                };
-                let store = env.as_context_mut();
-                let data = store.data().clone();
-                let map = data.messages.read().unwrap();
-                let payload = match map.get(&1) {
-                    Some(message) => message.message.payload().unwrap(),
-                    None => return,
-                };
-                memory.write(store, offset as usize, payload).unwrap();
-            },
-        )?;
+        imports::link(&mut linker, "host")?;
         Ok(Self {
             engine,
             module,
@@ -163,18 +134,14 @@ impl WasmTransformer {
         let data = HostContext::default();
         let mut store = Store::new(&engine, data);
         let instance = linker.instantiate(&mut store, &module)?;
-        let on_message_received =
-            instance.get_typed_func::<(i32, u32), i32>(&mut store, "proxy_on_message_received")?;
-        let on_context_create =
-            instance.get_typed_func::<(i32, i32), ()>(&mut store, "proxy_on_context_create")?;
-        on_context_create.call(&mut store, (1, 0)).unwrap();
-        on_context_create.call(&mut store, (1, 1))?;
+        let export_collection = ExportCollection::new(&instance, &mut store)?;
+        export_collection.trigger_context_create(&mut store, 1, 0)?;
+        export_collection.trigger_context_create(&mut store, 1, 1)?;
         Ok(WasmHost {
             _instance: instance,
             store,
             _module: module,
-            on_message_received,
-            _on_context_create: on_context_create,
+            export_collection,
         })
     }
 }
@@ -183,8 +150,7 @@ struct WasmHost {
     _instance: Instance,
     store: Store<HostContext>,
     _module: Module,
-    on_message_received: TypedFunc<(i32, u32), i32>,
-    _on_context_create: TypedFunc<(i32, i32), ()>,
+    export_collection: ExportCollection,
 }
 
 impl WasmHost {
@@ -197,11 +163,11 @@ impl WasmHost {
         host_context.add_message(context_id, message);
 
         match self
-            .on_message_received
-            .call(mut_context, (1, length as u32))?
+            .export_collection
+            .on_message_received(mut_context, 1, length)?
         {
             // discard
-            1 => Ok(None),
+            Action::Use => Ok(None),
             _ => {
                 let message_context = host_context.remove_message(context_id).unwrap();
                 let message_content = message_context.response.borrow();

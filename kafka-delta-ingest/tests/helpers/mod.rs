@@ -133,10 +133,8 @@ pub async fn read_files_from_store(table: &DeltaTable) -> Vec<i32> {
 
         let row_iter = reader.get_row_iter(None).unwrap();
 
-        for record in row_iter {
-            if let Ok(record) = record {
-                list.push(record.get_string(0).unwrap().parse::<i32>().unwrap());
-            }
+        for record in row_iter.flatten() {
+            list.push(record.get_string(0).unwrap().parse::<i32>().unwrap());
         }
     }
 
@@ -504,8 +502,7 @@ pub async fn inspect_table(path: &str) {
                 .await
                 .unwrap();
             let reader = SerializedFileReader::new(bytes).unwrap();
-            let mut i = 0;
-            for record in reader.get_row_iter(None).unwrap() {
+            for (i, record) in reader.get_row_iter(None).unwrap().enumerate() {
                 let json = record.unwrap().to_json_value();
                 if let Some(m) = parse_json_field::<Metadata>(&json, "metaData") {
                     println!(" {}. metaData: {}", i, m.id);
@@ -531,8 +528,6 @@ pub async fn inspect_table(path: &str) {
                         .unwrap_or(-1);
                     println!(" {}. add[{}]: {}", i, records, a.path);
                 }
-
-                i += 1;
             }
             println!()
         }

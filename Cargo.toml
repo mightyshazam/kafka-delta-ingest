@@ -3,13 +3,32 @@ members = [
     "kafka-delta-ingest",
     "kafka-delta-ingest-wasm",
     "kafka-delta-ingest-wasm-sdk",
+    "kafka-delta-ingest-wasm-types",
 ]
 
+[workspace.package]
+version = "0.2.0"
+authors = ["KyJah Keys <kyjah.keys@gmail.com>"]
+homepage = ""
+rust-version = "1.61"
+description = "WebAssembly for Proxies"
+readme = "README.md"
+license = "Apache-2.0"
+repository = "https://github.com/delta-io/kafka-delta-ingest"
+edition = "2018"
+build = "build.rs"
 resolver = "2"
+keywords = ["wasm", "kafka", "data-transform", "deltalake"]
+categories = []
 
 [profile.release-with-debug]
 inherits = "release"
 debug = true
 
 [workspace.dependencies]
+chrono = "0.4.31"
 log = "0"
+num-traits = "0.2"
+rdkafka = { version = "0.28", features = ["ssl-vendored"] }
+serde_json = "1"
+thiserror = "1"

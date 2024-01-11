@@ -15,6 +15,7 @@
 use crate::traits::*;
 use crate::types::*;
 use hashbrown::HashMap;
+use kafka_delta_ingest_wasm_types::*;
 use std::cell::{Cell, RefCell};
 
 thread_local! {
@@ -107,7 +108,7 @@ impl Dispatcher {
                 Some(ContextType::MessageContext) => {
                     self.create_message_context(context_id, root_context_id)
                 }
-                None => panic!("missing ContextType on root_context"),
+                _ => panic!("missing ContextType on root_context"),
             }
         } else {
             panic!("invalid root_context_id and missing constructors");

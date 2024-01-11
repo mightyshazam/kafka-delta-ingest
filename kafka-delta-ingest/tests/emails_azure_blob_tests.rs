@@ -79,7 +79,7 @@ async fn prepare_table(topic: &str) -> String {
     let container_client = azure_storage_blobs::prelude::ClientBuilder::emulator()
         .container_client(helpers::test_s3_bucket());
     let source_blob =
-        container_client.blob_client(format!("emails/_delta_log/00000000000000000000.json"));
+        container_client.blob_client("emails/_delta_log/00000000000000000000.json".to_string());
     let sas_url = {
         let now = OffsetDateTime::now_utc();
         let later = now + time::Duration::hours(1);

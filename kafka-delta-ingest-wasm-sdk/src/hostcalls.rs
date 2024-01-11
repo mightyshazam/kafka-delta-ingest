@@ -12,7 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::types::*;
+use kafka_delta_ingest_wasm_types::*;
+
 use std::ptr::null_mut;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 

@@ -1,3 +1,5 @@
+use kafka_delta_ingest_wasm_types::LogLevel;
+
 pub mod hostcalls;
 pub mod traits;
 pub mod types;
@@ -40,7 +42,7 @@ macro_rules! main {
     };
 }
 
-pub fn set_log_level(level: types::LogLevel) {
+pub fn set_log_level(level: LogLevel) {
     logger::set_log_level(level);
 }
 
